@@ -17,4 +17,4 @@ plugins {
 }
 
 rootProject.name = 'people'
-include('app', 'list', 'utilities', 'model', 'repository', 'service', 'controller')
+include('app', 'model', 'repository', 'service', 'controller')

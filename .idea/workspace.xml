@@ -4,7 +4,21 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="f0556e7a-6b76-4d2d-a66e-9d971cff7069" name="Changes" comment="" />
+    <list default="true" id="f0556e7a-6b76-4d2d-a66e-9d971cff7069" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/gradle.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/gradle.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/app/build.gradle" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/br/com/eichler/people/app/App.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/br/com/eichler/people/app/App.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/list/build.gradle" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/list/src/main/java/org/example/list/LinkedList.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/list/src/test/java/org/example/list/LinkedListTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/settings.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/settings.gradle" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utilities/build.gradle" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/utilities/src/main/java/org/example/utilities/JoinUtils.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/utilities/src/main/java/org/example/utilities/SplitUtils.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/utilities/src/main/java/org/example/utilities/StringUtils.java" beforeDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -14,6 +28,9 @@
     <projectState path="$PROJECT_DIR$">
       <ProjectState />
     </projectState>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="ProjectColorInfo"><![CDATA[{
   "customColor": "",
@@ -29,6 +46,8 @@
     "Gradle.Build people.executor": "Run",
     "ModuleVcsDetector.initialDetectionPerformed": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
+    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
+    "git-widget-placeholder": "main",
     "junie.onboarding.icon.badge.shown": "true",
     "kotlin-language-version-configured": "true",
     "node.js.detected.package.eslint": "true",
@@ -41,6 +60,11 @@
     "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/scripts/virtual-machine" />
+    </key>
+  </component>
   <component name="RunManager" selected="Spring Boot.PeopleApplication">
     <configuration name="PeopleApplication (1)" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
       <module name="people.app.main" />
@@ -72,7 +96,7 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1755123086687</updated>
-      <workItem from="1755537973866" duration="3746000" />
+      <workItem from="1755537973866" duration="7447000" />
     </task>
     <servers />
   </component>

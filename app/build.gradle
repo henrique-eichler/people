@@ -17,11 +17,10 @@ dependencies {
     runtimeOnly 'org.postgresql:postgresql'
 
     implementation 'org.apache.commons:commons-text'
-    implementation project(':utilities')
     implementation project(':controller')
 }
 
 application {
     // Define the main class for the application.
-    mainClass = 'org.example.app.PeopleApplication'
+    mainClass = 'br.com.eichler.people.app.PeopleApplication'
 }
