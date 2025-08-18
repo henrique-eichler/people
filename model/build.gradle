@@ -1,0 +1,11 @@
+/*
+ * Model module for People entity
+ */
+plugins {
+    id 'buildlogic.java-library-conventions'
+}
+
+dependencies {
+    // Provide JPA annotations for compilation
+    implementation 'jakarta.persistence:jakarta.persistence-api:3.1.0'
+}

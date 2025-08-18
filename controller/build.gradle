@@ -1,0 +1,12 @@
+/*
+ * Controller module for People
+ */
+plugins {
+    id 'buildlogic.java-library-conventions'
+}
+
+dependencies {
+    api project(':service')
+    api project(':model')
+    compileOnly 'org.springframework:spring-web:6.1.12'
+}
