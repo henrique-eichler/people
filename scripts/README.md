@@ -1,12 +1,21 @@
 # scripts: Ubuntu Server VM requirement and virt-manager option
 
-Last updated: 2025-08-18 16:14
+Last updated: 2025-08-18 16:42
 
 Purpose
 - You need an Ubuntu Server virtual machine (VM) to run the provided setup scripts and services.
 - If your host runs Debian/Ubuntu/Pop!_OS, you can create the VM via virt-manager (KVM/libvirt) using scripts/host/setup-host-virt-manager.sh.
 - If you prefer or are on a different OS/hypervisor, you can still use any alternative (VirtualBox, VMware, GNOME Boxes, Proxmox, Multipass, or pure qemu/libvirt) as long as you end up with an Ubuntu Server VM reachable via SSH.
 - Why virt-manager: chosen for performance (KVM/libvirt tends to outperform many desktop hypervisors). Alternatives are possible as noted above.
+
+CI/CD toolkit overview
+- Jenkins (setup-jenkins-server.sh): Continuous Integration server for pipelines.
+- Gitea (setup-gitea-server.sh): Git hosting with webhooks for CI triggers.
+- Nexus (setup-nexus-server.sh): Artifact repository for build outputs (Maven, npm, Docker).
+- Nginx (setup-nginx-server.sh): Reverse proxy/TLS front for services.
+- Docker installer (setup-docker.sh): Prerequisite for running services.
+- Orchestrator (setup-server.sh): Recreates the full stack in one go.
+- Backup utilities (backup/*): Backup and restore of Docker volumes.
 
 0) Requirement: Ubuntu Server VM
 - Recommended versions: Ubuntu Server 22.04 LTS or 24.04 LTS.

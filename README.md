@@ -1,6 +1,6 @@
 # People (Multi-Module Java/Spring Boot Project)
 
-Last updated: 2025-08-18 16:27
+Last updated: 2025-08-18 16:42
 
 ## Overview
 People is a multi-module Gradle project showcasing a simple People API. The application exposes basic CRUD operations over a People entity via a Spring Boot web API. A small console demo class is also included.
@@ -95,6 +95,26 @@ A simple console demo exists in the app module (class br.com.eichler.people.app.
 - The REST API scans org.example packages for components. The PeopleApplication class is located in br.com.eichler.people.app and explicitly configures scanBasePackages = "org.example".
 - If you introduce a real database, remove the auto-configuration exclusion used in Option B and ensure your datasource is reachable.
 - See scripts/README.md for host/VM setup and server provisioning.
+
+## CI/CD Support
+This repository includes a ready-to-provision self-hosted CI/CD toolchain via shell scripts under scripts/server:
+- setup-jenkins-server.sh: Jenkins CI server for building, testing, and orchestrating pipelines.
+- setup-gitea-server.sh: Gitea (lightweight Git hosting) for your repositories and webhooks.
+- setup-nexus-server.sh: Sonatype Nexus as an artifact registry (Maven, npm, Docker, etc.).
+- setup-nginx-server.sh: Nginx reverse proxy (and optional TLS termination) in front of services.
+- setup-docker.sh: Installs Docker on the VM (required by all service scripts).
+- setup-server.sh: Orchestrator to (re)create the full stack in one go.
+- backup/: Utilities to back up and restore Docker volumes for disaster recovery.
+
+Quick start
+- Prepare an Ubuntu Server VM and copy scripts as described in scripts/README.md.
+- On the VM, install Docker: sudo ~/Projects/tools/setup-docker.sh.
+- Provision the CI/CD stack (non-root): ~/Projects/tools/setup-server.sh <your-domain>.
+- Alternatively, run individual scripts (setup-jenkins-server.sh, setup-gitea-server.sh, setup-nexus-server.sh, etc.) as needed.
+
+For detailed guidance, see:
+- scripts/README.md — host/VM setup and file copy instructions.
+- scripts/server/README.md — overview of the server provisioning scripts.
 
 ## License
 Add your license information here.
