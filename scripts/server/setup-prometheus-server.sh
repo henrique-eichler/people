@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -eo pipefail
-source "$HOME/Projects/tools/functions.sh"
+source "$(pwd)/../functions.sh"
 
 # --- Validate input ----------------------------------------------------------
 if [[ $# -ne 1 ]]; then
@@ -29,14 +29,14 @@ SUBDOMAIN_CONF="$HOME/Projects/projects/nginx/subdomains/prometheus.$DOMAIN.conf
 
 # --- Copy root-ca.crt to the context of docker build ------------------------
 mkdir -p "$COMPOSE_DIR/certs"
-cp "$COMPOSE_DIR/../certs/root-ca.crt" "$COMPOSE_DIR/certs/$DOMAIN.root-ca.crt"
+cp "$COMPOSE_DIR/../certs/root-ca.crt" "$COMPOSE_DIR/certs/nginx-root.crt"
 
 # --- Create docker-compose.yml ----------------------------------------------
 log "Creating $COMPOSE_FILE..."
 write "$COMPOSE_FILE" "
   services:
     prometheus:
-      image: prom/prometheus:latest
+      image: prom/prometheus:v3.5.0
       container_name: prometheus
       restart: unless-stopped
       command:
@@ -45,7 +45,7 @@ write "$COMPOSE_FILE" "
         - --web.route-prefix=/
       volumes:
         - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
-        - ./certs/$DOMAIN.root-ca.crt:/etc/prometheus/ca/root-ca.crt:ro
+        - ./certs/nginx-root.crt:/etc/prometheus/ca/root-ca.crt:ro
       networks:
         - $NETWORK_NAME
 
@@ -63,22 +63,6 @@ write "$PROMETHEUS_YML" "
     - job_name: 'prometheus'
       static_configs:
         - targets: ['prometheus:9090']
-
-    - job_name: 'node-exporter'
-      static_configs:
-        - targets:
-            - 'avell:9100'
-            - 'senado:9100'
-            - 'saneago:9100'
-            - 'treinamento:9100'
-            - 'thinkpad:9100'
-            - 'vaio:9100'
-            - '$DOMAIN:9100'
-
-    - job_name: 'dcgm-exporter'
-      static_configs:
-        - targets:
-            - '$DOMAIN:9400'
 
     - job_name: 'nexus'
       scheme: https
@@ -109,15 +93,7 @@ write "$PROMETHEUS_YML" "
         - targets: ['jenkins.$DOMAIN:443']
       tls_config:
         ca_file: /etc/prometheus/ca/root-ca.crt
-        server_name: jenkins.$DOMAIN
-
-    - job_name: 'keycloak'
-      metrics_path: /metrics
-      static_configs:
-        - targets: ['keycloak:9000']
-      tls_config:
-        ca_file: /etc/prometheus/ca/root-ca.crt
-        server_name: keycloak.$DOMAIN"
+        server_name: jenkins.$DOMAIN"
 
 # --- Create nginx configuration ----------------------------------------------
 log "Creating $SUBDOMAIN_CONF"
@@ -151,7 +127,7 @@ write "$SUBDOMAIN_CONF" "
 
 # --- Ensure Docker network exists --------------------------------------------
 if ! docker network ls --format '{{.Name}}' | grep -qx "$NETWORK_NAME"; then
-  log "Creating Docker network '${NETWORK_NAME}'"
+  log "Creating Docker network '$NETWORK_NAME'"
   docker network create "$NETWORK_NAME"
 fi
 

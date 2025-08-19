@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
-set -euo pipefail
+set -eo pipefail
+source "$(pwd)/../functions.sh"
 
-# --- Functions & Logging -------------------------------------------------------
-log()    { echo -e "[log]  $*"; }
-info()   { echo -e "[info] $*"; }
-warn()   { echo -e "[warn] $*"; }
-error()  { echo -e "[error] $*"; exit 1; }
+# --- Validate input ----------------------------------------------------------
+if [[ $# -ne 0 ]]; then
+  error "Usage: $0"
+fi
 
 # --- Pre-checks ----------------------------------------------------------------
 if [[ $EUID -ne 0 ]]; then
@@ -95,14 +95,13 @@ else
 fi
 
 # --- Summary -------------------------------------------------------------------
-echo
-echo "[done] Docker setup complete"
-echo
-echo " • Docker version  : $(docker --version)"
-echo " • Current context : $(docker context show)"
-echo " • Group added     : $TARGET_USER → docker"
-echo
-echo "You may need to log out and log in again to apply group membership."
-echo
-echo "Verify Docker works with:"
-echo "  docker run --rm hello-world"
+info
+info "Docker setup complete"
+info " • Docker version  : $(docker --version)"
+info " • Current context : $(docker context show)"
+info " • Group added     : $TARGET_USER → docker"
+info
+info "You may need to log out and log in again to apply group membership."
+info
+info "Verify Docker works with:"
+info "  docker run --rm hello-world"

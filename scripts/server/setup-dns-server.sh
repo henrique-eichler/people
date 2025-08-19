@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -eo pipefail
-source "$(getent passwd ${SUDO_USER:-$USER} | cut -d: -f6)/Projects/tools/functions.sh"
+source "$(pwd)/../functions.sh"
 
 # --- Validate input ----------------------------------------------------------
 if [[ $# -ne 2 ]]; then
@@ -30,7 +30,7 @@ log "Creating docker-compose.yml"
 write "$COMPOSE_FILE" "
   services:
     dns:
-      image: coredns/coredns:latest
+      image: coredns/coredns:1.12.3
       container_name: dns
       command: -conf /etc/coredns/Corefile
       networks:
@@ -116,5 +116,3 @@ info
 info "Use it from clients/containers:"
 info "  • On your PC / router    : set DNS server to $HOST_IP"
 info "  • In Docker containers   : add 'dns: [\"$HOST_IP\"]' to your service in docker-compose"
-info
-info "Logs: docker logs -f dns"

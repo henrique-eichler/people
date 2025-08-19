@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -eo pipefail
-source "$(getent passwd ${SUDO_USER:-$USER} | cut -d: -f6)/Projects/tools/functions.sh"
+source "$(pwd)/../functions.sh"
 
 # --- Validate input ----------------------------------------------------------
 if [[ $# -ne 1 ]]; then
@@ -29,17 +29,17 @@ SUBDOMAIN_CONF="$HOME/Projects/projects/nginx/subdomains/gitea.$DOMAIN.conf"
 
 # --- Copy root-ca.crt to the context of docker build ------------------------
 mkdir -p "$COMPOSE_DIR/certs"
-cp "$COMPOSE_DIR/../certs/root-ca.crt" "$COMPOSE_DIR/certs/$DOMAIN.root-ca.crt"
+cp "$COMPOSE_DIR/../certs/root-ca.crt" "$COMPOSE_DIR/certs/nginx-root.crt"
 
 # --- Create Dockerfile ------------------------------------------------------
 log "Creating $DOCKER_FILE..."
 write "$DOCKER_FILE" "
-  FROM gitea/gitea:latest
+  FROM gitea/gitea:1.24.5
 
   USER root
 
   # Copy your Root CA (PEM). Keep your compose build context at the *project root*.
-  COPY certs/$DOMAIN.root-ca.crt /usr/local/share/ca-certificates/estimular-root.crt
+  COPY certs/nginx-root.crt /usr/local/share/ca-certificates/nginx-root.crt
 
   # Install CA bundle and update system trust store used by Go, curl, git, etc.
   RUN apk add --no-cache ca-certificates && update-ca-certificates"
@@ -131,14 +131,14 @@ write "$SUBDOMAIN_CONF" "
     }
   }"
 
-# --- Ensure Docker network exists --------------------------------------------
+# --- Ensure Docker network exists ---------------------------------------------
 if ! docker network ls --format '{{.Name}}' | grep -qx "$NETWORK_NAME"; then
   log "Creating Docker network '${NETWORK_NAME}'"
   docker network create "$NETWORK_NAME"
 fi
 
-# --- Launch Jenkins ----------------------------------------------------------
-log "Starting Jenkins container"
+# --- Launch Gitea -------------------------------------------------------------
+log "Starting Gitea container"
 cd "$COMPOSE_DIR"
 docker compose build --no-cache
 docker compose up -d
@@ -155,7 +155,7 @@ if docker ps --format '{{.Names}}' | grep -qx nginx; then
   docker exec nginx nginx -s reload &> /dev/null
 fi
 
-# --- Summary -----------------------------------------------------------------
+# --- Summary ------------------------------------------------------------------
 info
 info "Gitea setup completed."
 info "  • Web UI : https://gitea.$DOMAIN"

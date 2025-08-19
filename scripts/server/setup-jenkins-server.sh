@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -eo pipefail
-source "$HOME/Projects/tools/functions.sh"
+source "$(pwd)/../functions.sh"
 
 # --- Validate input ----------------------------------------------------------
 if [[ $# -ne 1 ]]; then
@@ -37,12 +37,12 @@ cp "$COMPOSE_DIR/../certs/root-ca.crt" "$COMPOSE_DIR/certs/$DOMAIN.root-ca.crt"
 # --- Create Dockerfile ------------------------------------------------------
 log "Creating $DOCKER_FILE..."
 write "$DOCKER_FILE" "
-  FROM jenkins/jenkins:lts
+  FROM jenkins/jenkins:2.524
 
   USER root
 
   # Copy your *root* CA (PEM). Keep your compose build context at the project root so this path exists.
-  COPY certs/$DOMAIN.root-ca.crt /usr/local/share/ca-certificates/estimular-root.crt
+  COPY certs/$DOMAIN.root-ca.crt /usr/local/share/ca-certificates/nginx-root.crt
 
   # Make sure OS certs are updated (not strictly required for Java, but good hygiene)
   RUN apt-get update && \
@@ -53,11 +53,11 @@ write "$DOCKER_FILE" "
   # Import the CA into Java's truststore used by Jenkins.
   # -cacerts targets the default JVM cacerts file; 'changeit' is the default password.
   RUN keytool -importcert -trustcacerts \
-      -alias estimular-root \
-      -file /usr/local/share/ca-certificates/estimular-root.crt \
+      -alias nginx-root \
+      -file /usr/local/share/ca-certificates/nginx-root.crt \
       -cacerts -storepass changeit -noprompt || true
 
-  RUN jenkins-plugin-cli --plugins "prometheus configuration-as-code"
+  RUN jenkins-plugin-cli --plugins \"prometheus configuration-as-code\"
 
   USER jenkins"
 
@@ -192,9 +192,12 @@ if docker ps --format '{{.Names}}' | grep -qx nginx; then
   docker exec nginx nginx -s reload &> /dev/null
 fi
 
+# --- Obtain initial admin password -------------------------------------------
+PASSWORD="$(while ! docker exec -it jenkins cat /var/jenkins_home/secrets/initialAdminPassword &> /dev/null; do sleep 1; done; docker exec -it jenkins cat /var/jenkins_home/secrets/initialAdminPassword)"
+
 # --- Summary -----------------------------------------------------------------
 info
 info "Jenkins setup complete"
 info "  • Web UI : https://$DOMAIN/jenkins/"
 info "  • Agent Port : $DOMAIN:50000"
-info "  • Config password: "
+info "  • Config password: $PASSWORD"

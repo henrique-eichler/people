@@ -1,0 +1,9 @@
+repositories {
+    maven {
+        url 'https://nexus.eichler.com.br/repositories/maven-public'
+        credentials {
+            username 'henrique'
+            password 'henriquepwd'
+        }
+    }
+}

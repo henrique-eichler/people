@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -eo pipefail
-source "$HOME/Projects/tools/functions.sh"
+source "$(pwd)/../functions.sh"
 
 # --- Validate input ----------------------------------------------------------
 if [[ $# -ne 1 ]]; then
@@ -30,19 +30,19 @@ SUBDOMAIN_CONF="$HOME/Projects/projects/nginx/subdomains/nexus.$DOMAIN.conf"
 
 # --- Copy root-ca.crt to the context of docker build ------------------------
 mkdir -p "$COMPOSE_DIR/certs"
-cp "$COMPOSE_DIR/../certs/root-ca.crt" "$COMPOSE_DIR/certs/$DOMAIN.root-ca.crt"
+cp "$COMPOSE_DIR/../certs/root-ca.crt" "$COMPOSE_DIR/certs/nginx-root.crt"
 
 # --- Create Dockerfile ------------------------------------------------------
 log "Creating $DOCKER_FILE..."
 write "$DOCKER_FILE" "
-  FROM sonatype/nexus3:latest
+  FROM sonatype/nexus3:3.78.3
 
   USER root
 
-  COPY certs/estimular.com.br.root-ca.crt /tmp/estimular-root.crt
+  COPY certs/nginx-root.crt /tmp/nginx-root.crt
   RUN keytool -importcert -trustcacerts \
-      -alias estimular-root \
-      -file /tmp/estimular-root.crt \
+      -alias nginx-root \
+      -file /tmp/nginx-root.crt \
       -cacerts -storepass changeit -noprompt || true
 
   USER nexus"
@@ -61,181 +61,19 @@ write "$COMPOSE_FILE" "
         - nexus-data:/nexus-data
         - ./nexus.properties:/nexus-data/etc/nexus.properties:ro
       networks:
-        - ${NETWORK_NAME}
+        - $NETWORK_NAME
 
   volumes:
     nexus-data:
 
   networks:
-    ${NETWORK_NAME}:
+    $NETWORK_NAME:
       external: true"
 
 # --- Generate nexus.properties -----------------------------------------------
 log "Creating $NEXUS_PROP..."
 write "$NEXUS_PROP" "
   nexus.prometheus.enabled=true"
-
-# --- Generate settings.xml ---------------------------------------------------
-log "Creating Maven settings.xml"
-write "$COMPOSE_DIR/settings.xml" "
-  <settings xmlns=\"http://maven.apache.org/SETTINGS/1.0.0\"
-            xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"
-            xsi:schemaLocation=\"
-              http://maven.apache.org/SETTINGS/1.0.0
-              https://maven.apache.org/xsd/settings-1.0.0.xsd\">
-
-    <mirrors>
-      <mirror>
-        <id>nexus-maven-central</id>
-        <name>Nexus Maven Central Proxy</name>
-        <url>https://nexus.$DOMAIN/repository/maven-public/</url>
-        <mirrorOf>*</mirrorOf>
-      </mirror>
-    </mirrors>
-
-    <servers>
-      <server>
-        <id>maven-releases</id>
-        <username>henrique</username>
-        <password>ampa</password>
-      </server>
-      <server>
-        <id>maven-snapshots</id>
-        <username>henrique</username>
-        <password>ampa</password>
-      </server>
-      <server>
-        <id>nexus-maven-central</id>
-        <username>henrique</username>
-        <password>ampa</password>
-      </server>
-    </servers>
-
-    <profiles>
-      <profile>
-        <id>nexus</id>
-        <activation>
-          <activeByDefault>true</activeByDefault>
-        </activation>
-        <repositories>
-          <repository>
-            <id>maven-releases</id>
-            <url>https://nexus.$DOMAIN/repository/maven-releases/</url>
-            <releases>
-              <enabled>true</enabled>
-            </releases>
-            <snapshots>
-              <enabled>false</enabled>
-            </snapshots>
-          </repository>
-          <repository>
-            <id>maven-snapshots</id>
-            <url>https://nexus.$DOMAIN/repository/maven-snapshots/</url>
-            <releases>
-              <enabled>false</enabled>
-            </releases>
-            <snapshots>
-              <enabled>true</enabled>
-            </snapshots>
-          </repository>
-        </repositories>
-      </profile>
-    </profiles>
-
-    <activeProfiles>
-      <activeProfile>nexus</activeProfile>
-    </activeProfiles>
-  </settings>"
-
-# --- Generate pom.xml -----------------------------------------------------
-log "Creating Maven pom.xml sample"
-write "$COMPOSE_DIR/pom.xml" "
-  <project xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"
-           xmlns=\"http://maven.apache.org/POM/4.0.0\"
-           xsi:schemaLocation=\"http://maven.apache.org/POM/4.0.0 
-                               http://maven.apache.org/xsd/maven-4.0.0.xsd\">
-    <modelVersion>4.0.0</modelVersion>
-
-    <distributionManagement>
-      <repository>
-        <id>nexus-releases</id>
-        <name>Nexus Release Repository</name>
-        <url>https://nexus.$DOMAIN/repository/maven-releases/</url>
-      </repository>
-      <snapshotRepository>
-        <id>nexus-snapshots</id>
-        <name>Nexus Snapshot Repository</name>
-        <url>https://nexus.$DOMAIN/repository/maven-snapshots/</url>
-      </snapshotRepository>
-    </distributionManagement>
-
-  </project>"
-
-# --- Generate init.gradle --------------------------------------------------
-log "Creating Gradle init.gradle"
-write "$COMPOSE_DIR/init.gradle" "
-  // Apply Nexus as a mirror of Maven Central for all projects
-  allprojects {
-    repositories {
-      maven {
-        name = \"nexus-maven-central\"
-        url = uri(\"https://nexus.$DOMAIN/repository/maven-public/\")
-        credentials {
-          username = \"henrique\"
-          password = \"ampa\"
-        }
-      }
-    }
-  }
-
-  // Add publishing logic after all projects are configured
-  projectsEvaluated {
-    allprojects { project ->
-      if (project.plugins.hasPlugin('maven-publish')) {
-        project.publishing {
-          publications {
-            // publications are declared in each build.gradle
-          }
-          repositories {
-            if (project.version.toString().endsWith(\"-SNAPSHOT\")) {
-              maven {
-                name = \"maven-snapshots\"
-                url = uri(\"https://nexus.$DOMAIN/repository/maven-snapshots/\")
-                credentials {
-                  username = \"henrique\"
-                  password = \"ampa\"
-                }
-              }
-            } else {
-              maven {
-                name = \"maven-releases\"
-                url = uri(\"https://nexus.$DOMAIN/repository/maven-releases/\")
-                credentials {
-                  username = \"henrique\"
-                  password = \"ampa\"
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  }"
-
-# --- Generate build.gradle --------------------------------------------------
-log "Creating Gradle build.gradle sample"
-write "$COMPOSE_DIR/buid.gradle" "
-  plugins {
-    id 'maven-publish'
-  }
-
-  publishing {
-    publications {
-      mavenJava(MavenPublication) {
-        from components.java
-      }
-    }
-  }"
 
 # --- Create nginx configuration ----------------------------------------------
 log "Creating $SUBDOMAIN_CONF"
@@ -281,7 +119,7 @@ write "$SUBDOMAIN_CONF" "
 
 # --- Ensure Docker network exists --------------------------------------------
 if ! docker network ls --format '{{.Name}}' | grep -qx "$NETWORK_NAME"; then
-  log "Creating Docker network '${NETWORK_NAME}'"
+  log "Creating Docker network '$NETWORK_NAME'"
   docker network create "$NETWORK_NAME"
 fi
 
@@ -303,8 +141,13 @@ if docker ps --format '{{.Names}}' | grep -qx nginx; then
   docker exec nginx nginx -s reload &> /dev/null
 fi
 
+# --- Obtain password from inside container -----------------------------------
+PASSWORD="$(while ! docker exec -it nexus cat /nexus-data/admin.password &> /dev/null; do sleep 1; done; docker exec -it nexus cat /nexus-data/admin.password)"
+
 # --- Summary -----------------------------------------------------------------
 info
 info "Nexus setup complete"
 info "  • Web UI        : https://nexus.$DOMAIN"
 info "  • Docker Repo   : nexus.$DOMAIN:5001"
+info "  • Username      : admin"
+info "  • Password      : $PASSWORD"

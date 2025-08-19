@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -eo pipefail
-source "$HOME/Projects/tools/functions.sh"
+source "$(pwd)/../functions.sh"
 
 # --- Validate input ----------------------------------------------------------
 if [[ $# -ne 1 ]]; then
@@ -29,10 +29,6 @@ PROMETHEUS_YML="$PROVISIONING_DIR/prometheus.yml"
 
 SUBDOMAIN_CONF="$HOME/Projects/projects/nginx/subdomains/grafana.$DOMAIN.conf"
 
-# --- Copy root-ca.crt to the context of docker build ------------------------
-mkdir -p "$COMPOSE_DIR/certs"
-cp "$COMPOSE_DIR/../certs/root-ca.crt" "$COMPOSE_DIR/certs/$DOMAIN.root-ca.crt"
-
 # --- Create docker-compose.yml ----------------------------------------------
 log "Creating $COMPOSE_FILE"
 write "$COMPOSE_FILE" "
@@ -42,8 +38,8 @@ write "$COMPOSE_FILE" "
       container_name: grafana
       restart: unless-stopped
       environment:
-        GF_SECURITY_ADMIN_USER: grafana
-        GF_SECURITY_ADMIN_PASSWORD: grafanapwd
+        GF_SECURITY_ADMIN_USER: henrique
+        GF_SECURITY_ADMIN_PASSWORD: henriquepwd
         GF_USERS_ALLOW_SIGN_UP: 'false'
         GF_SERVER_ROOT_URL: https://grafana.$DOMAIN
         GF_SERVER_SERVE_FROM_SUB_PATH: 'true'
@@ -136,5 +132,5 @@ fi
 info
 info "Grafana setup complete"
 info "  • URL      : https://grafana.$DOMAIN"
-info "  • Username : grafana"
-info "  • Password : grafanapwd"
+info "  • Username : henrique"
+info "  • Password : henriquepwd"

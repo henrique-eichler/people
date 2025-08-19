@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 set -eo pipefail
-source "$HOME/Projects/tools/functions.sh"
+source "$(pwd)/../functions.sh"
 
 # --- Validate input ----------------------------------------------------------
-if [[ $# -ne 1 ]]; then
-  error "Usage: $0 <domain>"
+if [[ $# -ne 7 ]]; then
+  error "Usage: $0 <domain> <C> <ST> <L> <O> <OU> <CN>"
 fi
 
 # --- Require not root privileges --------------------------------------------------
@@ -19,6 +19,12 @@ done
 
 # --- Variables ---------------------------------------------------------------
 DOMAIN="$1"
+DN_C="$2"
+DN_ST="$3"
+DN_L="$4"
+DN_O="$5"
+DN_OU="$6"
+DN_CN="$7"
 NETWORK_NAME="internal_net"
 
 COMPOSE_DIR="$HOME/Projects/projects/nginx"
@@ -59,12 +65,12 @@ if [[ ! -f "$ROOT_KEY" || ! -f "$ROOT_CRT" ]]; then
     distinguished_name = dn
 
     [ dn ]
-    C  = BR
-    ST = GO
-    L  = Goias
-    O  = Espaco Estimular
-    OU = Clinica
-    CN = Estimular Internal Root
+    C  = $DN_C
+    ST = $DN_ST
+    L  = $DN_L
+    O  = $DN_O
+    OU = $DN_OU
+    CN = $DN_CN
 
     [ v3_ca ]
     basicConstraints = critical, CA:true, pathlen:0
@@ -89,11 +95,11 @@ if [[ ! -f "$DOMAIN_CRT" || ! -f "$DOMAIN_KEY" ]]; then
     req_extensions = v3_req
 
     [dn]
-    C=BR
-    ST=GO
-    L=Goias
-    O=Espaco Estimular
-    OU=Clinica
+    C  = $DN_C
+    ST = $DN_ST
+    L  = $DN_L
+    O  = $DN_O
+    OU = $DN_OU
     CN=*.$DOMAIN
 
     [v3_req]
@@ -232,7 +238,7 @@ write "$HTML_FILE" "
   <html lang='en'>
   <head>
     <meta charset='UTF-8' />
-    <title>ServerX Services · estimular.com.br</title>
+    <title>Services · $DOMAIN</title>
     <meta name='viewport' content='width=device-width, initial-scale=1' />
     <style>
       :root{
@@ -281,37 +287,37 @@ write "$HTML_FILE" "
   <body>
     <header>
       <h1>Available Services</h1>
-      <p class='muted'>This page is served by Nginx on <strong>estimular.com.br</strong> inside the tailnet.</p>
+      <p class='muted'>This page is served by Nginx on <strong>$DOMAIN</strong> inside the tailnet.</p>
     </header>
 
     <main class='wrap'>
       <ul class='cards'>
-        <li><a class='card' href='https://gitea.estimular.com.br/'><strong>Gitea</strong><small>gitea.estimular.com.br</small></a></li>
-        <li><a class='card' href='https://grafana.estimular.com.br/'><strong>Grafana</strong><small>grafana.estimular.com.br</small></a></li>
-        <li><a class='card' href='https://jenkins.estimular.com.br/'><strong>Jenkins</strong><small>jenkins.estimular.com.br</small></a></li>
-        <li><a class='card' href='https://keycloak.estimular.com.br/'><strong>Keycloak</strong><small>keycloak.estimular.com.br</small></a></li>
-        <li><a class='card' href='https://nexus.estimular.com.br/'><strong>Nexus Repository</strong><small>nexus.estimular.com.br</small></a></li>
-        <li><a class='card' href='https://prometheus.estimular.com.br/'><strong>Prometheus</strong><small>prometheus.estimular.com.br</small></a></li>
-        <li><a class='card' href='https://rancher.estimular.com.br/'><strong>Rancher</strong><small>rancher.estimular.com.br</small></a></li>
+        <li><a class='card' href='https://gitea.$DOMAIN/'><strong>Gitea</strong><small>gitea.$DOMAIN</small></a></li>
+        <li><a class='card' href='https://grafana.$DOMAIN/'><strong>Grafana</strong><small>grafana.$DOMAIN</small></a></li>
+        <li><a class='card' href='https://jenkins.$DOMAIN/'><strong>Jenkins</strong><small>jenkins.$DOMAIN</small></a></li>
+        <li><a class='card' href='https://keycloak.$DOMAIN/'><strong>Keycloak</strong><small>keycloak.$DOMAIN</small></a></li>
+        <li><a class='card' href='https://nexus.$DOMAIN/'><strong>Nexus Repository</strong><small>nexus.$DOMAIN</small></a></li>
+        <li><a class='card' href='https://prometheus.$DOMAIN/'><strong>Prometheus</strong><small>prometheus.$DOMAIN</small></a></li>
+        <li><a class='card' href='https://rancher.$DOMAIN/'><strong>Rancher</strong><small>rancher.$DOMAIN</small></a></li>
       </ul>
 
       <section class='ca' id='root-ca'>
         <div class='row'>
           <div>
-            <h2>Trust the Estimular Root CA</h2>
+            <h2>Trust the nginx Root CA</h2>
             <p class='hint'>
               Our internal services use a private certificate authority. Install the Root CA below so browsers, Gradle, Docker, and CLIs trust
-              <span class='kbd'>*.estimular.com.br</span>.
+              <span class='kbd'>*.$DOMAIN</span>.
             </p>
             <div class='actions'>
               <a class='btn primary' href='/certs/root-ca.crt' download>⬇ Download root-ca.crt</a>
-              <button class='btn copy' data-copy='curl -fsSLk https://estimular.com.br/certs/root-ca.crt -o root-ca.crt'>Copy curl command</button>
-              <button class='btn copy' data-copy='wget --no-check-certificate https://estimular.com.br/certs/root-ca.crt -O root-ca.crt'>Copy wget command</button>
+              <button class='btn copy' data-copy='curl -fsSLk https://$DOMAIN/certs/root-ca.crt -o root-ca.crt'>Copy curl command</button>
+              <button class='btn copy' data-copy='wget --no-check-certificate https://$DOMAIN/certs/root-ca.crt -O root-ca.crt'>Copy wget command</button>
             </div>
 
             <details>
               <summary>Linux (Ubuntu/Debian) – System trust store</summary>
-              <pre><code>sudo install -m 0644 root-ca.crt /usr/local/share/ca-certificates/estimular-root-ca.crt
+              <pre><code>sudo install -m 0644 root-ca.crt /usr/local/share/ca-certificates/nginx-root.crt
   sudo update-ca-certificates</code></pre>
               <p class='hint'>This makes browsers and most tools trust the CA. Java/Gradle may still need the JVM truststore (see below).</p>
             </details>
@@ -329,8 +335,8 @@ write "$HTML_FILE" "
             <details>
               <summary>Java/Gradle – JVM truststore (no root access required)</summary>
               <pre><code># Create a personal truststore and point Gradle to it
-  keytool -importcert -alias estimular-root -keystore ~/.gradle/estimular-truststore.jks -storepass changeit -file root-ca.crt -noprompt
-  printf '%s\n' 'org.gradle.jvmargs=-Djavax.net.ssl.trustStore=/home/$USER/.gradle/estimular-truststore.jks -Djavax.net.ssl.trustStorePassword=changeit' >> ~/.gradle/gradle.properties
+  keytool -importcert -alias nginx-root -keystore ~/.gradle/nginx-truststore.jks -storepass changeit -file root-ca.crt -noprompt
+  printf '%s\n' 'org.gradle.jvmargs=-Djavax.net.ssl.trustStore=/home/$USER/.gradle/nginx-truststore.jks -Djavax.net.ssl.trustStorePassword=changeit' >> ~/.gradle/gradle.properties
   ./gradlew --stop && ./gradlew build</code></pre>
             </details>
 
