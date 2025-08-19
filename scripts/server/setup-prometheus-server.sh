@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 set -eo pipefail
 source "$(pwd)/../functions.sh"
+source "$(pwd)/../dns.sh"
 
 # --- Validate input ----------------------------------------------------------
 if [[ $# -ne 1 ]]; then
@@ -46,6 +47,8 @@ write "$COMPOSE_FILE" "
       volumes:
         - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
         - ./certs/nginx-root.crt:/etc/prometheus/ca/root-ca.crt:ro
+      dns:
+        - $DNS_IP
       networks:
         - $NETWORK_NAME
 

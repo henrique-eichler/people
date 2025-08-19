@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 set -eo pipefail
 source "$(pwd)/../functions.sh"
+source "$(pwd)/../dns.sh"
 
 # --- Validate input ----------------------------------------------------------
 if [[ $# -ne 1 ]]; then
@@ -85,14 +86,16 @@ write "$COMPOSE_FILE" "
         - '222:222'
       volumes:
         - gitea-data:/data
+      dns:
+        - $DNS_IP
       networks:
-        - ${NETWORK_NAME}
+        - $NETWORK_NAME
 
   volumes:
     gitea-data:
 
   networks:
-    ${NETWORK_NAME}:
+    $NETWORK_NAME:
       external: true"
 
 # --- Create Nginx configuration for gitea.$DOMAIN ----------------------------
@@ -133,7 +136,7 @@ write "$SUBDOMAIN_CONF" "
 
 # --- Ensure Docker network exists ---------------------------------------------
 if ! docker network ls --format '{{.Name}}' | grep -qx "$NETWORK_NAME"; then
-  log "Creating Docker network '${NETWORK_NAME}'"
+  log "Creating Docker network '$NETWORK_NAME'"
   docker network create "$NETWORK_NAME"
 fi
 

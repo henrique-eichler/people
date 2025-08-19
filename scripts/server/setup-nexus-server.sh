@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 set -eo pipefail
 source "$(pwd)/../functions.sh"
+source "$(pwd)/../dns.sh"
 
 # --- Validate input ----------------------------------------------------------
 if [[ $# -ne 1 ]]; then
@@ -60,6 +61,8 @@ write "$COMPOSE_FILE" "
       volumes:
         - nexus-data:/nexus-data
         - ./nexus.properties:/nexus-data/etc/nexus.properties:ro
+      dns:
+        - $DNS_IP
       networks:
         - $NETWORK_NAME
 

@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 set -eo pipefail
 source "$(pwd)/../functions.sh"
+source "$(pwd)/../dns.sh"
 
 # --- Validate input ----------------------------------------------------------
 if [[ $# -ne 1 ]]; then
@@ -75,6 +76,8 @@ write "$COMPOSE_FILE" "
         - jenkins-data:/var/jenkins_home
         - ./casc:/var/jenkins_home/casc
         - /var/run/docker.sock:/var/run/docker.sock
+      dns:
+        - $DNS_IP
       networks:
         - $NETWORK_NAME
 

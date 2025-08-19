@@ -24,6 +24,12 @@ NETWORK_NAME="internal_net"
 COMPOSE_DIR="$HOME/Projects/projects/dns"
 COMPOSE_FILE="$COMPOSE_DIR/docker-compose.yml"
 COREFILE="$COMPOSE_DIR/Corefile"
+DNS_SH="$(pwd)/../dns.sh"
+
+# --- Create dns.sh script to be used by others scripts ----------------------
+log "Creating $DNS_SH"
+write "$DNS_SH" "
+  export DNS_IP=$HOST_IP"
 
 # --- Create docker-compose.yml ----------------------------------------------
 log "Creating docker-compose.yml"

@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 set -eo pipefail
-source "$HOME/Projects/tools/functions.sh"
+source "$(pwd)/../functions.sh"
+source "$(pwd)/../dns.sh"
 
 # --- Validate input ----------------------------------------------------------
 if [[ $# -ne 1 ]]; then
@@ -22,7 +23,6 @@ DOMAIN="$1"
 NETWORK_NAME="internal_net"
 
 COMPOSE_DIR="$HOME/Projects/projects/rancher"
-DOCKER_FILE="$COMPOSE_DIR/Dockerfile"
 COMPOSE_FILE="$COMPOSE_DIR/docker-compose.yml"
 
 SUBDOMAIN_CONF="$HOME/Projects/projects/nginx/subdomains/rancher.$DOMAIN.conf"
@@ -46,6 +46,8 @@ write "$COMPOSE_FILE" "
       volumes:
         - rancher-data:/var/lib/rancher
         - ./certs:/etc/ssl/certs-custom:ro
+      dns:
+        - $DNS_IP
       networks:
         - $NETWORK_NAME
 
